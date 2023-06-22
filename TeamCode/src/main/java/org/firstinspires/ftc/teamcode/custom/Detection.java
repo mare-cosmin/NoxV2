@@ -35,9 +35,9 @@ import java.nio.charset.CharacterCodingException;
 import java.util.ArrayList;
 
 public class Detection{
-    OpenCvCamera camera;
-    static final double FEET_PER_METER = 3.28084;
-    AprilTagDetectionPipeline aprilTagDetectionPipeline;
+    private OpenCvCamera camera;
+    private final double FEET_PER_METER = 3.28084;
+    private AprilTagDetectionPipeline aprilTagDetectionPipeline;
 
     public void init(HardwareMap hardwareMap){
         SampleMecanumDrive robot = new SampleMecanumDrive(hardwareMap);

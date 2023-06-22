@@ -46,22 +46,22 @@ public class AprilTagDetectionPipeline extends OpenCvPipeline
     private ArrayList<AprilTagDetection> detectionsUpdate = new ArrayList<>();
     private final Object detectionsUpdateSync = new Object();
 
-    Mat cameraMatrix;
+    private Mat cameraMatrix;
 
-    Scalar blue = new Scalar(7,197,235,255);
-    Scalar red = new Scalar(255,0,0,255);
-    Scalar green = new Scalar(0,255,0,255);
-    Scalar white = new Scalar(255,255,255,255);
+    private final Scalar blue = new Scalar(7,197,235,255);
+    private final Scalar red = new Scalar(255,0,0,255);
+    private final Scalar green = new Scalar(0,255,0,255);
+    private final Scalar white = new Scalar(255,255,255,255);
 
-    double fx;
-    double fy;
-    double cx;
-    double cy;
+    private double fx;
+    private double fy;
+    private double cx;
+    private double cy;
 
     // UNITS ARE METERS
-    double tagsize;
-    double tagsizeX;
-    double tagsizeY;
+    private double tagsize;
+    private double tagsizeX;
+    private double tagsizeY;
 
     private float decimation;
     private boolean needToSetDecimation;

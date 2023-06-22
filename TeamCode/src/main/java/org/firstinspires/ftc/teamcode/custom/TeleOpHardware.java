@@ -20,12 +20,10 @@ public class TeleOpHardware {
     //800 ticks max
     DcMotor leftFront, leftRear, rightFront, rightRear;
     List<DcMotor> motors;
-    DcMotorEx liftRight, liftLeft;
-    Servo claw, rightBrat, leftBrat;
+    DcMotorEx liftRight, liftLeft, brat;
+    Servo claw;
 
-    RevColorSensorV3 colorUp;
     ColorRangeSensor color;
-    TouchSensor touch;
 
     boolean spate = false;
 
@@ -35,6 +33,14 @@ public class TeleOpHardware {
     final int LOW_POS = 0;
     final int MID_POS = 450;
     final int HIGH_POS = 950;
+
+    final int BRAT_DOWN = 0;
+
+    final int BRAT_SPATE = 200;
+
+    final int BRAT_UP = 120;
+
+    final int BRAT_IDLE = 20;
     boolean auto = false;
     boolean brat_spate = false;
     double pickup_time = 0;
@@ -47,8 +53,6 @@ public class TeleOpHardware {
         frontEncoder = new Encoder(hardwareMap.get(DcMotorEx.class, "rightRear")); //ctrl hub 3
 
         color = hardwareMap.get(ColorRangeSensor.class, "color");
-        colorUp = hardwareMap.get(RevColorSensorV3.class, "colorUp");
-        touch = hardwareMap.get(TouchSensor.class, "touch");
 
         leftRear = hardwareMap.dcMotor.get("leftRear");
         leftFront = hardwareMap.dcMotor.get("leftFront");
@@ -82,19 +86,8 @@ public class TeleOpHardware {
 
         claw = hardwareMap.servo.get("claw");
         closeClaw();
-        rightBrat = hardwareMap.servo.get("rightBrat");
-        leftBrat = hardwareMap.servo.get("leftBrat");
+        brat = hardwareMap.get(DcMotorEx.class, "brat");
         bratPickup();
-    }
-
-    public void bratOn(){
-        leftBrat.getController().pwmEnable();
-        rightBrat.getController().pwmEnable();
-    }
-
-    public void bratOff(){
-        leftBrat.getController().pwmDisable();
-        rightBrat.getController().pwmDisable();
     }
 
     public void gotoPosLift(int pos){
@@ -107,12 +100,12 @@ public class TeleOpHardware {
     }
 
     public void openClaw(){
-        claw.setPosition(0.15);
+        claw.setPosition(0.5);
         spate = false;
     }
 
     public void closeClaw(){
-        claw.setPosition(0.4);
+        claw.setPosition(0.7);
     }
 
     public void liftBreak(){
@@ -127,50 +120,56 @@ public class TeleOpHardware {
         setPowerZeroLift();
     }
 
+    public void bratFloat(){
+        brat.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.FLOAT);
+        brat.setPower(0);
+    }
+
+    public void bratBrake(){
+        brat.setZeroPowerBehavior(DcMotor.ZeroPowerBehavior.BRAKE);
+    }
+
+    public void bratRunTo(int pos){
+        brat.setTargetPosition(pos);
+        brat.setMode(DcMotor.RunMode.RUN_TO_POSITION);
+        brat.setPower(1);
+    }
+
     public void bratSpate(){
         pickup_time = 99999999;
         brat_spate = true;
-        bratOn();
-        rightBrat.setPosition(0);
-        leftBrat.setPosition(1);
+        bratBrake();
+        bratRunTo(BRAT_SPATE);
     }
 
     public void bratHighSpate(){
         pickup_time = 99999999;
         brat_spate = true;
-        bratOn();
-        rightBrat.setPosition(0);
-        leftBrat.setPosition(1);
+        bratBrake();
+        bratRunTo(BRAT_SPATE);
     }
-
     public void bratFata(){
         pickup_time = 99999999;
         brat_spate = false;
-        bratOn();
-        rightBrat.setPosition(0.51);
-        leftBrat.setPosition(0.49);
+        bratBrake();
+        bratRunTo(BRAT_UP);
     }
-
     public void bratHighFata(){
         pickup_time = 99999999;
         brat_spate = false;
-        bratOn();
-        rightBrat.setPosition(0.44);
-        leftBrat.setPosition(0.56);
+        bratBrake();
+        bratRunTo(BRAT_UP);
     }
 
     public void bratIdle(){
         pickup_time = 99999999;
         brat_spate = false;
-        bratOn();
-        rightBrat.setPosition(0.96);
-        leftBrat.setPosition(0.04);
+        bratBrake();
+        bratRunTo(BRAT_IDLE);
     }
-
     public void bratPickup(){
-        bratOn();
-        rightBrat.setPosition(1);
-        leftBrat.setPosition(0);
+        bratBrake();
+        bratRunTo(BRAT_DOWN);
     }
 
     public void setPowerZeroLift(){
@@ -198,6 +197,7 @@ public class TeleOpHardware {
 
     public void pickupStack(){
         closeClaw();
+
         switch (pickup_pos){
             case 1:
                 pickupGround();

@@ -26,10 +26,13 @@ public class Teleop extends LinearOpMode {
         double down_time = 0;
         double open_time = 0;
 
+        double y, x, rx;
+        double denominator, frontLeftPower, frontRightPower, backLeftPower, backRightPower;
+
         waitForStart();
         while(opModeIsActive()) {
             if(robot.pickup_time + 1.5 < runtime.seconds() && robot.pickup_time + 1.6 > runtime.seconds()){
-                robot.bratOff();
+                robot.bratFloat();
                 robot.openClaw();
                 robot.auto = true;
             }
@@ -50,14 +53,17 @@ public class Teleop extends LinearOpMode {
             if (gamepad2.left_trigger > 0.5) {
                 robot.auto = false;
                 robot.closeClaw();
+                telemetry.addData("Claw", "Closed");
             } else {
                 if (gamepad2.right_trigger > 0.5) {
                     robot.openClaw();
                     manualOpen = true;
                     robot.auto = true;
                     open_time = runtime.milliseconds();
+                    telemetry.addData("Claw", "Opened");
                 }
             }
+            telemetry.update();
 
             if (gamepad2.dpad_right) {
                 if (up_time + 300 < runtime.milliseconds()) {
@@ -74,7 +80,7 @@ public class Teleop extends LinearOpMode {
                 telemetry.clear();
             }
 
-            if (!robot.touch.isPressed() && touch_time + 3 < runtime.seconds()){
+            if (touch_time + 3 < runtime.seconds()){
                 telemetry.clear();
                 switch (robot.pickup_pos) {
                     case 1:
@@ -92,12 +98,6 @@ public class Teleop extends LinearOpMode {
             telemetry.addData("leftEnc", robot.leftEncoder.getCurrentPosition());
             telemetry.addData("rightEnc", robot.rightEncoder.getCurrentPosition());
             telemetry.addData("frontEnc", robot.frontEncoder.getCurrentPosition());
-
-            if(robot.touch.isPressed()){
-                telemetry.clear();
-                telemetry.addData("1", AsciiArt.WHITE);
-                touch_time = runtime.seconds();
-            }
 
             telemetry.update();
 
@@ -158,18 +158,18 @@ public class Teleop extends LinearOpMode {
                     joyScale = 1;
             }
 
-            double y = -gamepad1.left_stick_y; // Remember, this is reversed!
-            double x = gamepad1.left_stick_x; // Counteract imperfect strafing
-            double rx = gamepad1.right_stick_x;
+            y = -gamepad1.left_stick_y; // Remember, this is reversed!
+            x = gamepad1.left_stick_x; // Counteract imperfect strafing
+            rx = gamepad1.right_stick_x;
 
             // Denominator is the largest motor power (absolute value) or 1
             // This ensures all the powers maintain the same ratio, but only when
             // at least one is out of the range [-1, 1]
-            double denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
-            double frontLeftPower = (joyScale) * (y + x + rx) / denominator;
-            double backLeftPower = (joyScale) * (y - x + rx) / denominator;
-            double frontRightPower = (joyScale) * (y - x - rx) / denominator;
-            double backRightPower = (joyScale) * (y + x - rx) / denominator;
+            denominator = Math.max(Math.abs(y) + Math.abs(x) + Math.abs(rx), 1);
+            frontLeftPower = (joyScale) * (y + x + rx) / denominator;
+            backLeftPower = (joyScale) * (y - x + rx) / denominator;
+            frontRightPower = (joyScale) * (y - x - rx) / denominator;
+            backRightPower = (joyScale) * (y + x - rx) / denominator;
 
             robot.leftFront.setPower(frontLeftPower);
             robot.leftRear.setPower(backLeftPower);
